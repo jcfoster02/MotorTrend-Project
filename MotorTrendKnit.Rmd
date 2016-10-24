@@ -1,0 +1,119 @@
+---
+title: "MotorTrend Coursera Project"
+author: "Julie Foster"
+date: "October 23, 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Project Instructions
+
+ You work for Motor Trend, a magazine about the automobile industry. Looking at a 
+data set of a collection of cars, they are interested in exploring the 
+ relationship between a set of variables and miles per gallon (MPG) (outcome). 
+ They are particularly interested in the following two questions:     
+    *	“Is an automatic or manual transmission better for MPG”    
+    *	"Quantify the MPG difference between automatic and manual transmissions"
+    
+
+## Executive Summary
+
+ To answer these questions, we will do the following:     
+ 1. Perform an exploratory data analysis     
+ 2. Fit multivariate models and determine best model selection  
+ 3. Examine the residuals and perform diagnostics     
+ 4. Summarize findings     
+
+From this analysis it is shown that cars with manual transmission was better for the MPG term than those with automatic transmission.  According to the model we selected, using a manual transmission had an advantage of approximately 3 miles per gallon over the automatic transmission.
+
+
+## 1. Exploratory Data Analysis
+ We begin by loading the data and exploring the details:
+ 
+```{r}
+data(mtcars)
+head(mtcars)
+```
+
+To look at some of the data, we will plot the two main variables of interest: "mpg" and the style of transmission "am" (0 = automatic, 1 = manual):
+
+```{r}
+boxplot(mpg ~ am, data = mtcars, col= "steelblue", 
+        xlab = "Transmission (0 = automatic, 1 = manual)", 
+        ylab = " Miles Per Gallon", 
+        main = "Boxplot of MPG vs. Transmission")
+```
+
+##2. Model Selection
+To begin the model selection process, we will use a stepwise regression.
+
+Starting with a regression of all the variables:
+
+```{r}
+mtfit <- lm(mpg ~., mtcars)
+summary(mtfit)$coef
+```
+
+From this we can see a strong variation in p-values.  Selecting the five lowest values, we will begin by fitting the next model with "disp", "hp", "wt", "qsec", and "am":
+
+```{r}
+mtfit5 <- lm(mpg ~ factor(am) + disp + hp + wt + qsec, mtcars)
+summary(mtfit5)$coef
+summary(mtfit5)$adj.r.squared
+```
+
+Here we can see that the Adjusted R-squared value is 0.8375, which means that almost 84% of the variance between the variables can be explained by the model.  The p-values, however, show that the coefficients of "disp" and "hp"" are not significant.
+
+Selecting the three lowest p-values from mtfit5, the next model uses: 
+
+```{r}
+mtfit3 <- lm(mpg ~ factor(am) + wt + qsec, mtcars)
+summary(mtfit3)$coef
+summary(mtfit5)$adj.r.squared
+```
+
+From here, the Adjusted R-Squared value is 0.8336,
+ which means the model can explain 83% of the variance of the
+mpg variable and all of the p-values are significant.
+
+And finally, using a simple linear model, fitting just the "am" and the "mpg":
+
+```{r}
+mtfit1 <- lm(mpg ~ factor(am), mtcars)
+summary(mtfit1)$coef
+summary(mtfit1)$adj.r.squared
+```
+
+This shows that on average, a car has a mean of 17.147 mpg with an automatic transmission, and (17.147 + 7.245 = ) 24.392 with a manual transmission.
+
+The Adjusted R-squared value is 0.3385, which means that the 
+model can explain about 34% of the variance of the MPG variable. This model has the lowest R-squared value and should be rejected as a valid model for this data.
+
+From the three models we used: mtfit5, mtfit3, and mtfit1, we selected mtfit3 as the best model because of the Adjusted R-squared value of 0.8336 and the significant p-values of the 
+three regressors.
+
+##3. Examine Residuals
+The next step involves using a plot to visualize the residuals. We have to make sure there is no pattern in residuals, which would indicate that there may be unaccounted variables in our model:
+
+```{r}
+plot(mtfit3, which=1)
+```
+
+The points are pretty well randomly scattered with no discernable pattern and show that our fit is robust.
+
+Finally, we need to confirm that the residuals have a normal distribution. We do this by examining the QQ plot:
+
+```{r}
+plot (mtfit3, which=2)
+```
+
+It can be seen that the residuals mimic a normal 
+distribution and therefore our statistical inferences are 
+valid.
+
+##4. Summary
+After running an exploratory analysis on the data, we selected the best model, mtfit3, and examined the residuals. The effect of using a manual transmission is better for the "mpg" term. The interpretation of the estimated coefficients from mtfit3 show that when holding the weight("wt") and the 1/4 mile time("qsec") constant, the average change of approximately 3 miles per gallon for the using a manual transmission over an automatic transmission.
